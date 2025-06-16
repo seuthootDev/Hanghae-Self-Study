@@ -9,32 +9,22 @@ import { Board } from './board.entity';
 @Injectable()
 export class BoardsService {
     constructor(
-        @InjectRepository(BoardRepository)
         private boardRepository: BoardRepository,
     ) {}
 
-    async createBoard(createBoardDto: CreateBoardDto): Promise<Board> {
-        const { title, description } = createBoardDto;
-
-        const board = this.boardRepository.create({
-            title,
-            description,
-            status: BoardStatus.PUBLIC,
-        });
-        
-        await this.boardRepository.save(board);
-        return board;
+    createBoard(createBoardDto: CreateBoardDto): Promise<Board> {
+        return this.boardRepository.createBoard(createBoardDto);
     }
 
     async getBoardById(id: number): Promise<Board> {
-        const found = await this.boardRepository.findOne({ where: { id } });
+        const found = await this.boardRepository.findOne(id);
         if (!found) {
             throw new NotFoundException(`Board with id ${id} not found`);
         }
         return found;
     }
     
-    async deleteBoard(id: number) {
+    async deleteBoard(id: number): Promise<void> {
         const result = await this.boardRepository.delete(id);
         if (result.affected === 0) {
             throw new NotFoundException(`Board with id ${id} not found`);
@@ -46,6 +36,10 @@ export class BoardsService {
         board.status = status;
         await this.boardRepository.save(board);
         return board;
+    }
+
+    async getAllBoards(): Promise<Board[]> {
+        return this.boardRepository.find();
     }
 
 
